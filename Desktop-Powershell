@@ -1,0 +1,123 @@
+$ver = $psversiontable.psversion
+Add-Type -Assembly system.io.compression.filesystem
+
+function test {
+write-host ""
+write-host -foregroundcolor Green "[Desktop PowerShell]"
+write-host ""
+write-host -foregroundcolor cyan "1. Search for a file"
+Write-Host -ForegroundColor Cyan "2. Test connectivity to any URL"
+Write-Host -ForegroundColor Cyan "3. Search Windows Registry"
+write-host -foregroundcolor Cyan "4. Resolve a namespace in DNS"
+write-host -foregroundcolor Cyan "5. Make Windows Talk"
+#Write-Host -ForegroundColor Cyan " 8. File Compression"
+write-host ""
+write-host "Choose an option above: " -nonewline
+
+$b = read-host
+
+if ($b -eq 1) {
+write-host ""
+Write-Host -ForegroundColor cyan "Enter full path to file: " -NoNewline
+$a = Read-Host
+$item = Get-ChildItem -Path "*$a*" | FL
+$item
+test
+}
+
+#Test connectivity to any url#
+if ($b -eq "2") {
+Write-Host ""
+Write-Host -ForegroundColor Green "Enter URL to connect to: " -NoNewline
+$b = Read-Host
+$http = "http://"
+$https_request = "$http" + "$b"
+
+$HTTP_Request = [System.Net.WebRequest]::Create("$https_request")
+
+# We then get a response from the site.
+$HTTP_Response = $HTTP_Request.GetResponse()
+
+# We then get the HTTP code as an integer.
+$HTTP_Status = [int]$HTTP_Response.StatusCode
+
+If ($HTTP_Status -eq 200) { 
+    
+	Write-Host -ForegroundColor Cyan "Site $b responded with $Http_Status ok"
+	Write-Host -ForegroundColor white "1. Go to site"
+    write-host -foregroundcolor white "2. Go to main menu"
+	
+$a = Read-Host
+#if ($a -eq 1) {Start-Sleep -Seconds 3; Start-Process $b}
+if ($a -eq 1) {Start-Process $https_request; Start-Sleep 3} #not yet working
+test
+if ($a -eq 2){Write-Host -ForegroundColor Cyan "Going to main menu"; test}
+}
+
+Else {Write-Host -foregroundcolor red "The Site appears unresponsive"; sleep 3; write-host -foregroundcolor green "Main Menu"; test}
+test
+}
+
+#Search Windows registry
+if ($b -eq 3) { #partially working
+Write-Host -ForegroundColor green "1. Search registry key"
+Write-Host -ForegroundColor green "2. Search registry key property"
+
+$c = Read-Host
+
+if ($c -eq 1) {
+Write-Host -ForegroundColor green "Enter registry key in hklm:\xxxx format: " -NoNewline
+$a = Read-Host
+Get-ChildItem $a
+}
+if ($c -eq 2) {
+Write-Host -ForegroundColor green "Enter registry key property in hklm:\xxxx format: " -NoNewline
+$a = Read-Host
+Get-itemproperty $a
+}
+test
+}
+
+#Resolve a namespace in DNS
+if ($b -eq 4) {
+        Write-Host -ForegroundColor White "1. Windows 8 or newer DNS test"
+        Write-Host -ForegroundColor White "2. Windows 7 DNS test"
+        Write-Host -foregroundcolor White "Choose option above: " -nonewline
+
+        $DNS = Read-host
+        
+        if ($DNS -eq 1) {write-host -ForegroundColor Gray "Enter name to lookup: " -nonewline; $name = Read-Host; Resolve-DnsName $name;test}
+        if ($DNS -eq 2) {Write-Host -ForegroundColor Gray "Enter name to lookup: " -nonewline; $name = Read-Host; nslookup $name; test }
+} 
+
+#Open new PowerShell window
+if ($b -eq 5) {
+        Write-Host -Foregroundcolor White "Type Something to Say: " -nonewline
+        $C = Read-Host
+        PowerShell -Command "Add-Type –AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('$C');"
+    }
+test
+  
+
+#Future subnet test
+#function Address {
+#$IPAddress = "10.137.92.96","10.137.92.97","10.137.92.98"
+
+#foreach ($I in $IPAddress) {
+        #Write-Host -ForegroundColor Green "Testing Connection: $I"
+        #Test-Connection $I
+        #Write-Host ""
+#}
+#}
+#Address
+
+#1..254 | %{ Test-Connection "10.137.92.$_" }
+
+#if ($a -eq 8){
+#Write-Host ""
+#Compress
+#}
+
+elseif ($b -ne 1..5) {write-host -foregroundcolor red "Invalid option!"; test}
+}
+test
