@@ -3,16 +3,19 @@ Add-Type -Assembly system.io.compression.filesystem
 
 function test {
 write-host ""
-write-host -foregroundcolor Green "[Desktop PowerShell]"
+write-host -foregroundcolor Green "[Desktop PowerShell: Windows - CurrentOS $ver]"
 write-host ""
-write-host -foregroundcolor cyan "1. Search for a file"
-Write-Host -ForegroundColor Cyan "2. Test connectivity to any URL"
-Write-Host -ForegroundColor Cyan "3. Search Windows Registry"
-write-host -foregroundcolor Cyan "4. Resolve a namespace in DNS"
-write-host -foregroundcolor Cyan "5. Make Windows Talk"
-#Write-Host -ForegroundColor Cyan " 8. File Compression"
+write-host -foregroundcolor White "1. Search for a file"
+Write-Host -ForegroundColor White "2. Test connectivity to any URL"
+Write-Host -ForegroundColor White "3. Search Windows Registry"
+write-host -foregroundcolor White "4. Check DNS to a target"
+write-host -foregroundcolor White "5. Make Windows Talk"
+Write-Host -ForegroundColor White "6. Show WIFI password"
+Write-Host -ForegroundColor White "7. Clear Clipboard"
+Write-Host -ForegroundColor White "8. Test port connectivity"
+
 write-host ""
-write-host "Choose an option above: " -nonewline
+write-host -ForegroundColor Cyan "Choose an option above: " -nonewline
 
 $b = read-host
 
@@ -80,14 +83,38 @@ test
 
 #Resolve a namespace in DNS
 if ($b -eq 4) {
+        Write-Host " "
+        Write-Host "DNS Tool" -ForegroundColor Green
         Write-Host -ForegroundColor White "1. Windows 8 or newer DNS test"
         Write-Host -ForegroundColor White "2. Windows 7 DNS test"
+        Write-Host -ForegroundColor White "3. Query SPF Record"
+        Write-Host -ForegroundColor White "4. Query DKIM Record"
+        Write-Host -ForegroundColor White "5. Query DMARC Record"
         Write-Host -foregroundcolor White "Choose option above: " -nonewline
 
         $DNS = Read-host
         
         if ($DNS -eq 1) {write-host -ForegroundColor Gray "Enter name to lookup: " -nonewline; $name = Read-Host; Resolve-DnsName $name;test}
         if ($DNS -eq 2) {Write-Host -ForegroundColor Gray "Enter name to lookup: " -nonewline; $name = Read-Host; nslookup $name; test }
+        if ($DNS -eq 3) {
+            Write-Host "Enter SPF Domain: "
+            $c = Read-Host
+            nslookup -q=TXT $c;
+            test
+            }
+        if ($DNS -eq 4){
+            Write-Host "Enter DKIM Domain: "
+            $c = Read-Host
+            nslookup -q=TXT google._domainkey.$c;
+            test
+            }
+        if ($DNS -eq 5){
+            Write-Host "Enter DMARC Domain: "
+            $c = Read-Host
+            nslookup -q=TXT _dmarc.$c;
+            test
+            }
+        
 } 
 
 #Open new PowerShell window
@@ -97,27 +124,23 @@ if ($b -eq 5) {
         PowerShell -Command "Add-Type –AssemblyName System.Speech; (New-Object System.Speech.Synthesis.SpeechSynthesizer).Speak('$C');"
     }
 test
-  
+if($b -eq 6) {netsh wlan show profiles}test
 
-#Future subnet test
-#function Address {
-#$IPAddress = "10.137.92.96","10.137.92.97","10.137.92.98"
+if($b -eq 7) {Set-Clipboard -Value $Null}test
 
-#foreach ($I in $IPAddress) {
-        #Write-Host -ForegroundColor Green "Testing Connection: $I"
-        #Test-Connection $I
-        #Write-Host ""
-#}
-#}
-#Address
+#Test port against IP, not yet working
+if($b -eq 8) {
+        Write-Host " Enter Ip address: " -NoNewline
+        $c = Read-Host
 
-#1..254 | %{ Test-Connection "10.137.92.$_" }
+        Write-Host " Enter port: " -NoNewline
+        $d = Read-Host
 
-#if ($a -eq 8){
-#Write-Host ""
-#Compress
-#}
+        $PortConnection = Test-Connection -IPv4 $c -TcpPort $d -detailed
+        $PortConnection
+    }
+test
 
-elseif ($b -ne 1..5) {write-host -foregroundcolor red "Invalid option!"; test}
+elseif ($b -ne 1..8) {write-host -foregroundcolor red "Invalid option!"; test}
 }
 test
